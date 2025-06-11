@@ -1,6 +1,7 @@
+// purchaseApi.js
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-const COURSE_PURCHASE_API = "http://localhost:8080/api/v1/purchase";
+const COURSE_PURCHASE_API = "http://localhost:8088/api/v1/progress";
 
 export const purchaseApi = createApi({
   reducerPath: "purchaseApi",
@@ -9,9 +10,9 @@ export const purchaseApi = createApi({
     credentials: "include",
   }),
   endpoints: (builder) => ({
-    createCheckoutSession: builder.mutation({
+    simulateCoursePurchase: builder.mutation({
       query: (courseId) => ({
-        url: "/checkout/create-checkout-session",
+        url: "/checkout/simulate-payment",
         method: "POST",
         body: { courseId },
       }),
@@ -24,7 +25,7 @@ export const purchaseApi = createApi({
     }),
     getPurchasedCourses: builder.query({
       query: () => ({
-        url: `/`,
+        url: `/purchased-courses`,
         method: "GET",
       }),
     }),
@@ -32,7 +33,7 @@ export const purchaseApi = createApi({
 });
 
 export const {
-  useCreateCheckoutSessionMutation,
+  useSimulateCoursePurchaseMutation,
   useGetCourseDetailWithStatusQuery,
   useGetPurchasedCoursesQuery,
 } = purchaseApi;

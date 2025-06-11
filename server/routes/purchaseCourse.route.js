@@ -1,13 +1,27 @@
+// purchaseCourse.route.js
 import express from "express";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
-import { createCheckoutSession, getAllPurchasedCourse, getCourseDetailWithPurchaseStatus, stripeWebhook } from "../controllers/coursePurchase.controller.js";
+import {
+  getCourseDetailWithPurchaseStatus,
+  getAllPurchasedCourse,
+  simulateCoursePurchase,
+} from "../controllers/coursePurchase.controller.js";
+import { getCourseProgress } from "../controllers/courseProgress.controller.js";
 
 const router = express.Router();
 
-router.route("/checkout/create-checkout-session").post(isAuthenticated, createCheckoutSession);
-router.route("/webhook").post(express.raw({type:"application/json"}), stripeWebhook);
-router.route("/course/:courseId/detail-with-status").get(isAuthenticated,getCourseDetailWithPurchaseStatus);
+router.get(
+  "/course/:courseId/detail-with-status",
+  isAuthenticated,
+  getCourseDetailWithPurchaseStatus
+);
+router.get("/purchased-courses", isAuthenticated, getAllPurchasedCourse);
+router.post(
+  "/checkout/simulate-payment",
+  isAuthenticated,
+  simulateCoursePurchase
+);
 
-router.route("/").get(isAuthenticated,getAllPurchasedCourse);
+router.get("/course/:courseId", isAuthenticated, getCourseProgress);
 
 export default router;

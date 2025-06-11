@@ -1,79 +1,166 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useGetPurchasedCoursesQuery } from "@/features/api/purchaseApi";
-import React from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useEffect, useState } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+} from "recharts";
 
-const Dashboard = () => {
+// Random int generator
+const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
-  const {data, isSuccess, isError, isLoading} = useGetPurchasedCoursesQuery();
+const COLORS = ["#10b981", "#ef4444"];
 
-  if(isLoading) return <h1>Loading...</h1>
-  if(isError) return <h1 className="text-red-500">Failed to get purchased course</h1>
+const StatCard = ({ title, value }) => (
+  <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 text-center">
+    <h4 className="text-gray-500 dark:text-gray-400">{title}</h4>
+    <p className="text-2xl font-bold text-gray-800 dark:text-white">
+      {typeof value === "number" ? value.toLocaleString() : value}
+    </p>
+  </div>
+);
 
-  //
-  const {purchasedCourse} = data || [];
+export default function Dashboard() {
+  const [stats, setStats] = useState({});
+  const [lineData, setLineData] = useState([]);
+  const [pieData, setPieData] = useState([]);
 
-  const courseData = purchasedCourse.map((course)=> ({
-    name:course.courseId.courseTitle,
-    price:course.courseId.coursePrice
-  }))
+  const activities = [
+    {
+      id: 1,
+      student: "Atul",
+      action: "Completed Module 1",
+      date: "2025-05-07",
+    },
+    { id: 2, student: "Sandeep", action: "Submitted Quiz", date: "2025-05-06" },
+    { id: 3, student: "Prabhav", action: "Joined Course", date: "2025-05-05" },
+    {
+      id: 3,
+      student: "Mritunjay",
+      action: "Joined Course",
+      date: "2025-05-05",
+    },
+  ];
 
-  const totalRevenue = purchasedCourse.reduce((acc,element) => acc+(element.amount || 0), 0);
+  // Generate random data on mount
+  useEffect(() => {
+    const totalStudents = randInt(10, 100);
+    const activeCourses = randInt(7, 7);
+    const assignmentsSubmitted = randInt(20, 100);
+    const instructors = randInt(3, 25);
 
-  const totalSales = purchasedCourse.length;
+    const months = ["Jan", "Feb", "Mar", "Apr", "May"];
+    const newLineData = months.map((month) => ({
+      month,
+      students: randInt(20, 100),
+    }));
+
+    const passed = randInt(10, 60);
+    const failed = 100 - passed;
+
+    setStats({
+      totalStudents,
+      activeCourses,
+      assignmentsSubmitted,
+      instructors,
+    });
+
+    setLineData(newLineData);
+    setPieData([
+      { name: "Users", value: passed },
+      { name: "Assignment", value: failed },
+    ]);
+  }, []);
+
   return (
-    <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 ">
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle>Total Sales</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-blue-600">{totalSales}</p>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen p-6 bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-white transition-colors duration-300">
+      <h2 className="text-3xl font-semibold mb-4">📚 LMS Dashboard</h2>
 
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300">
-        <CardHeader>
-          <CardTitle>Total Revenue</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-blue-600">{totalRevenue}</p>
-        </CardContent>
-      </Card>
+      {/* Stats */}
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <StatCard title="Total Students" value={stats.totalStudents} />
+        <StatCard title="Active Courses" value={stats.activeCourses} />
+        <StatCard
+          title="Assignments Submitted"
+          value={stats.assignmentsSubmitted}
+        />
+        <StatCard title="Instructors" value={stats.instructors} />
+      </div>
 
-      {/* Course Prices Card */}
-      <Card className="shadow-lg hover:shadow-xl transition-shadow duration-300 col-span-1 sm:col-span-2 md:col-span-3 lg:col-span-4">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold text-gray-700">
-            Course Prices
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+      {/* Charts */}
+      <div className="grid md:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4">
+          <h3 className="mb-2 font-semibold">Monthly Enrollment</h3>
           <ResponsiveContainer width="100%" height={250}>
-            <LineChart data={courseData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-              <XAxis
-                dataKey="name"
-                stroke="#6b7280"
-                angle={-30} // Rotated labels for better visibility
-                textAnchor="end"
-                interval={0} // Display all labels
-              />
-              <YAxis stroke="#6b7280" />
-              <Tooltip formatter={(value, name) => [`₹${value}`, name]} />
+            <LineChart data={lineData}>
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
               <Line
                 type="monotone"
-                dataKey="price"
-                stroke="#4a90e2" // Changed color to a different shade of blue
-                strokeWidth={3}
-                dot={{ stroke: "#4a90e2", strokeWidth: 2 }} // Same color for the dot
+                dataKey="students"
+                stroke="#3b82f6"
+                strokeWidth={2}
               />
             </LineChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4">
+          <h3 className="mb-2 font-semibold">Analyses: </h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={pieData}
+                dataKey="value"
+                nameKey="name"
+                outerRadius={80}
+                label
+              >
+                {pieData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Activities */}
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4">
+        <h3 className="mb-4 font-semibold">Recent Activity</h3>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left border-separate border-spacing-y-2">
+            <thead>
+              <tr className="text-sm text-gray-500 dark:text-gray-400">
+                <th className="px-4 py-2">Student</th>
+                <th className="px-4 py-2">Activity</th>
+                <th className="px-4 py-2">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {activities.map((act) => (
+                <tr
+                  key={act.id}
+                  className="bg-gray-50 dark:bg-gray-700 rounded-xl text-sm"
+                >
+                  <td className="px-4 py-2">{act.student}</td>
+                  <td className="px-4 py-2">{act.action}</td>
+                  <td className="px-4 py-2">{act.date}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
-};
-
-export default Dashboard;
+}

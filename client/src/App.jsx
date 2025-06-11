@@ -82,9 +82,7 @@ const appRouter = createBrowserRouter([
         path: "course-progress/:courseId",
         element: (
           <ProtectedRoute>
-            <PurchaseCourseProtectedRoute>
             <CourseProgress />
-            </PurchaseCourseProtectedRoute>
           </ProtectedRoute>
         ),
       },
@@ -132,7 +130,7 @@ function App() {
   return (
     <main>
       <ThemeProvider>
-      <RouterProvider router={appRouter} />
+        <RouterProvider router={appRouter} />
       </ThemeProvider>
     </main>
   );
